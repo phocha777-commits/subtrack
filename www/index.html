@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10131b">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>SUBTRACK — 구독 다이어트</title>
+<style>
+:root{--bg:#10131b;--panel:#191e29;--panel2:#222a38;--line:#30394a;--text:#f5f7fb;--muted:#9aa6b7;--accent:#8b7bff;--green:#52d6a5;--orange:#ffb35c;--danger:#ff737b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit}button{cursor:pointer}
+.app{max-width:520px;margin:auto;padding:calc(14px + env(safe-area-inset-top)) 17px 110px}
+.top{display:flex;justify-content:space-between;align-items:center;margin:6px 0 14px}
+.brand{font-weight:850;letter-spacing:2px;font-size:13px;color:var(--muted)}
+.top h1{font-size:23px;margin:5px 0 0}
+.iconbtn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:13px;padding:10px 12px}
+.tabs{position:sticky;top:0;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--bg);padding:6px 0 12px}
+.tabs button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:12px;padding:10px 4px;font-weight:700;font-size:14px}
+.tabs button.active{background:#36345d;border-color:#5f58a5;color:#fff}
+.view{display:none}.view.active{display:block}
+.hero{background:linear-gradient(135deg,#282c49,#242c40 60%,#1c2536);padding:21px;border-radius:22px;border:1px solid #373b5d}
+.hero small{color:#bac2d8}.total{font-size:34px;font-weight:850;margin:9px 0 2px;letter-spacing:-1px}.year{color:#a9bbff;font-size:13px}
+.hero.save{background:linear-gradient(135deg,#1f3b34,#1d2f33 60%,#1c2536);border-color:#2f5a4d}.hero.save .year{color:#8fe8c4}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.stat label{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;font-size:22px;margin-top:5px}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;margin:18px 0 12px}.sectionhead h2{font-size:17px;margin:0}
+.add{border:0;background:var(--accent);color:#fff;border-radius:12px;padding:10px 13px;font-weight:700}
+.chips{display:flex;gap:7px;overflow:auto;padding:2px 0 11px}
+.chip{border:1px solid var(--line);color:var(--muted);background:transparent;border-radius:999px;padding:7px 12px;white-space:nowrap;font-size:12px}
+.chip.active{background:#36345d;border-color:#5f58a5;color:#fff}
+.list{display:grid;gap:9px}
+.item{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px;width:100%;text-align:left;color:var(--text)}
+.logo{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:15px;flex-shrink:0;color:#fff}
+.details{flex:1;min-width:0}.details b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.details small{color:var(--muted);display:block;margin-top:3px;font-size:12px}
+.price{text-align:right;font-weight:750;font-size:14px;white-space:nowrap}.price small{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:4px}
+.badge{display:inline-block;border-radius:8px;padding:3px 7px;font-size:11px;font-weight:800;margin-top:5px}
+.g-good{background:#1d3d33;color:var(--green)}.g-ok{background:#2b3047;color:#b8c2ff}.g-meh{background:#43331f;color:var(--orange)}.g-bad{background:#47232a;color:var(--danger)}.g-none{background:var(--panel2);color:var(--muted)}
+.empty,.card{color:var(--muted);text-align:center;padding:24px;border:1px dashed var(--line);border-radius:16px;line-height:1.6;font-size:14px}
+.card{text-align:left;border-style:solid;background:var(--panel);color:var(--text)}
+.card h3{margin:0 0 8px;font-size:16px}.card p{margin:6px 0;color:var(--muted)}.card ul{margin:8px 0;padding-left:18px;color:var(--muted)}
+.card .add{width:100%;margin-top:12px;padding:13px}
+.note{color:#697487;font-size:11px;text-align:center;margin-top:14px;line-height:1.5}
+.month{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.month span{width:72px;color:var(--muted);font-size:13px;flex-shrink:0}.month.now{border-color:#5f58a5}
+.month select{flex:1;background:#10141d;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px}
+.month b{font-size:13px;white-space:nowrap}
+.toggle{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}.toggle div{flex:1}.toggle small{color:var(--muted)}
+.todo{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.7}
+.todo .x{color:var(--danger)}.todo .o{color:var(--green)}
+.overlay{position:fixed;inset:0;background:#0009;display:none;align-items:flex-end;justify-content:center;z-index:5}.overlay.show{display:flex}
+.modal{background:#1a202b;width:100%;max-width:520px;max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;padding:22px 18px calc(24px + env(safe-area-inset-bottom));border:1px solid var(--line)}
+.modal h2{margin:0 0 15px}.form{display:grid;gap:12px}.form label{font-size:12px;color:var(--muted)}
+.form input,.form select{width:100%;margin-top:5px;background:#10141d;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;outline:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save{width:100%;background:var(--green);color:#10231d;border:0;padding:13px;border-radius:13px;font-weight:800}
+.cancel{width:100%;background:transparent;color:var(--muted);border:1px solid var(--line);padding:12px;border-radius:13px}
+.del{width:100%;background:transparent;color:var(--danger);border:1px solid #5a2b31;padding:12px;border-radius:13px}
+.applist{display:grid;gap:7px;margin-bottom:12px}
+.applist button{display:flex;justify-content:space-between;gap:10px;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;text-align:left}
+.applist button.sel{border-color:var(--green)}.applist small{color:var(--muted);white-space:nowrap}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#10131bef;border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-left)) calc(12px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:2}
+.bottom button{max-width:490px;width:100%;border:0;border-radius:14px;padding:14px;background:var(--accent);color:#fff;font-weight:800}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div><div class="brand">SUBTRACK</div><h1>구독 다이어트</h1></div>
+    <button class="iconbtn" id="exportBtn" title="데이터 백업">⇩</button>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="subs" class="active">구독</button>
+    <button data-tab="value">가성비</button>
+    <button data-tab="rotate">갈아타기</button>
+  </nav>
+
+  <!-- 구독 목록 -->
+  <section class="view active" id="view-subs">
+    <div class="hero"><small>월 구독 예상 금액</small><div class="total" id="total">₩0</div><div class="year" id="annual">연간 예상 ₩0</div></div>
+    <div class="stats">
+      <div class="stat"><label>활성 구독</label><strong id="count">0개</strong></div>
+      <div class="stat"><label>다음 결제</label><strong id="next">-</strong></div>
+    </div>
+    <div class="sectionhead"><h2>구독 목록</h2><button class="add" id="openAdd">＋ 추가</button></div>
+    <div class="chips" id="filters"></div>
+    <div class="list" id="list"></div>
+    <div class="note">항목을 누르면 수정·삭제할 수 있어요. 데이터는 이 기기에만 저장됩니다.<br><a href="./privacy.html" style="color:#8792a6">개인정보처리방침</a></div>
+  </section>
+
+  <!-- 가성비 점수 -->
+  <section class="view" id="view-value">
+    <div id="valueBody"></div>
+  </section>
+
+  <!-- OTT 갈아타기 -->
+  <section class="view" id="view-rotate">
+    <div id="rotateBody"></div>
+  </section>
+</main>
+
+<div class="bottom"><button id="bottomAdd">＋ 구독 등록하기</button></div>
+
+<!-- 구독 추가/수정 -->
+<div class="overlay" id="subOverlay"><div class="modal">
+  <h2 id="subTitle">구독 추가</h2>
+  <form class="form" id="subForm">
+    <label>서비스 이름<input id="name" required placeholder="예: 넷플릭스"></label>
+    <label>월 결제 금액 (원)<input id="amount" type="number" min="1" inputmode="numeric" required placeholder="17000"></label>
+    <div class="two">
+      <label>카테고리<select id="category"></select></label>
+      <label>결제일<select id="day"></select></label>
+    </div>
+    <button class="save">저장</button>
+    <button class="del" type="button" id="deleteSub" hidden>이 구독 삭제</button>
+    <button class="cancel" type="button" data-close>취소</button>
+  </form>
+</div></div>
+
+<!-- 앱 연결 -->
+<div class="overlay" id="linkOverlay"><div class="modal">
+  <h2 id="linkTitle">앱 연결</h2>
+  <p style="color:var(--muted);font-size:13px;margin:-6px 0 12px">최근 30일 동안 사용한 앱이에요. 이 구독에 해당하는 앱을 골라 주세요.</p>
+  <div class="applist" id="appList"></div>
+  <button class="cancel" type="button" data-close>닫기</button>
+</div></div>
+
+<script>
+/* ---------- 저장소 ---------- */
+const KEY = 'subtrack-v1', PLAN_KEY = 'subtrack-plan-v1';
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch (e) { return d } };
+let subs = load(KEY, []);
+let plan = load(PLAN_KEY, { include: {}, months: {} });
+subs.forEach(s => { if (!s.id) s.id = Math.random().toString(36).slice(2, 10) });
+const persist = () => localStorage.setItem(KEY, JSON.stringify(subs));
+const savePlan = () => localStorage.setItem(PLAN_KEY, JSON.stringify(plan));
+persist();
+
+/* ---------- 공통 ---------- */
+const $ = s => document.querySelector(s);
+const CATS = ['OTT', '영상', '음악', 'AI', '클라우드', '게임', '쇼핑', '생산성', '기타'];
+const VIDEO_CATS = ['OTT', '영상'];
+const COLORS = ['#7c6cf2', '#e63b50', '#14a77c', '#2685df', '#e5a42d', '#ec6b36', '#aa62db', '#4c98c8'];
+const fmt = n => '₩' + Math.round(Number(n || 0)).toLocaleString('ko-KR');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const colorOf = name => { let h = 0; for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0; return COLORS[h % COLORS.length] };
+const payDate = (y, m, day) => new Date(y, m, Math.min(day, new Date(y, m + 1, 0).getDate()));
+const hm = min => min < 60 ? min + '분' : Math.floor(min / 60) + '시간' + (min % 60 ? ' ' + (min % 60) + '분' : '');
+const isNative = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+/* ---------- 네이티브 사용시간 플러그인 ---------- */
+let Usage = null;
+async function getUsagePlugin() {
+  if (Usage || !isNative()) return Usage;
+  try { const core = await import('./capacitor-core.js'); Usage = core.registerPlugin('UsageStats') } catch (e) { Usage = null }
+  return Usage;
+}
+
+/* 서비스 이름 → 안드로이드 앱 패키지 (자동 연결용) */
+const PRESETS = [
+  [/유튜브\s*뮤직|youtube\s*music/i, 'com.google.android.apps.youtube.music'],
+  [/유튜브|youtube/i, 'com.google.android.youtube'],
+  [/넷플릭스|netflix/i, 'com.netflix.mediaclient'],
+  [/티빙|tving/i, 'net.cj.cjhv.gs.tving'],
+  [/웨이브|wavve/i, 'kr.co.captv.pooqV2'],
+  [/쿠팡\s*플레이|coupang\s*play/i, 'com.coupang.mobile.play'],
+  [/디즈니|disney/i, 'com.disney.disneyplus'],
+  [/왓챠|watcha/i, 'com.frograms.wplay'],
+  [/멜론|melon/i, 'com.iloen.melon'],
+  [/지니|genie/i, 'com.ktmusic.geniemusic'],
+  [/^플로$|^flo$/i, 'skplanet.musicmate'],
+  [/스포티파이|spotify/i, 'com.spotify.music'],
+  [/애플\s*뮤직|apple\s*music/i, 'com.apple.android.music'],
+  [/chat\s*gpt|챗\s*gpt/i, 'com.openai.chatgpt'],
+  [/claude|클로드/i, 'com.anthropic.claude'],
+  [/gemini|제미나이/i, 'com.google.android.apps.bard'],
+];
+
+/* ---------- 탭 ---------- */
+let tab = 'subs';
+$('#tabs').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  tab = b.dataset.tab;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + tab));
+  renderAll();
+};
+
+/* ---------- 구독 탭 ---------- */
+let filter = '전체';
+function renderSubs() {
+  const total = subs.reduce((a, s) => a + s.price, 0);
+  $('#total').textContent = fmt(total);
+  $('#annual').textContent = '연간 예상 ' + fmt(total * 12);
+  $('#count').textContent = subs.length + '개';
+  const t = new Date(), today = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  const next = subs.map(s => { let d = payDate(t.getFullYear(), t.getMonth(), s.day); if (d < today) d = payDate(t.getFullYear(), t.getMonth() + 1, s.day); return d }).sort((a, b) => a - b)[0];
+  $('#next').textContent = next ? (next.getMonth() + 1) + '/' + next.getDate() : '-';
+
+  const f = $('#filters'); f.innerHTML = '';
+  ['전체', ...CATS].forEach(c => {
+    const b = document.createElement('button'); b.className = 'chip' + (c === filter ? ' active' : ''); b.textContent = c;
+    b.onclick = () => { filter = c; renderSubs() }; f.append(b);
+  });
+
+  const list = $('#list'); list.innerHTML = '';
+  const items = subs.filter(s => filter === '전체' || s.cat === filter).sort((a, b) => a.day - b.day);
+  if (!items.length) { list.innerHTML = '<div class="empty">등록된 구독이 없습니다.<br>＋ 버튼으로 구독을 추가해 보세요.</div>'; return }
+  items.forEach(s => {
+    const b = document.createElement('button'); b.className = 'item';
+    b.innerHTML = `<div class="logo" style="background:${colorOf(s.name)}">${esc(s.name.slice(0, 2).toUpperCase())}</div>
+      <div class="details"><b>${esc(s.name)}</b><small>${esc(s.cat)} · 매월 ${s.day}일</small></div>
+      <div class="price">${fmt(s.price)}<small>월 결제</small></div>`;
+    b.onclick = () => openSub(s.id);
+    list.append(b);
+  });
+}
+
+/* ---------- 구독 추가/수정 모달 ---------- */
+CATS.forEach(c => $('#category').append(new Option(c, c)));
+for (let d = 1; d <= 31; d++) $('#day').append(new Option(d + '일', d));
+let editingId = null;
+function openSub(id) {
+  editingId = id || null;
+  const s = subs.find(x => x.id === id);
+  $('#subTitle').textContent = s ? '구독 수정' : '구독 추가';
+  $('#name').value = s ? s.name : '';
+  $('#amount').value = s ? s.price : '';
+  $('#category').value = s ? s.cat : 'OTT';
+  $('#day').value = s ? s.day : new Date().getDate();
+  $('#deleteSub').hidden = !s;
+  show('#subOverlay');
+}
+$('#subForm').onsubmit = e => {
+  e.preventDefault();
+  const data = { name: $('#name').value.trim(), price: Number($('#amount').value), cat: $('#category').value, day: Number($('#day').value) };
+  if (!data.name || !(data.price > 0)) return;
+  const s = subs.find(x => x.id === editingId);
+  if (s) Object.assign(s, data); else subs.push({ id: Math.random().toString(36).slice(2, 10), ...data });
+  persist(); hide('#subOverlay'); renderAll();
+};
+$('#deleteSub').onclick = () => {
+  const s = subs.find(x => x.id === editingId); if (!s) return;
+  if (!confirm(s.name + ' 구독을 목록에서 삭제할까요?')) return;
+  subs = subs.filter(x => x.id !== s.id); delete plan.include[s.id]; savePlan(); persist(); hide('#subOverlay'); renderAll();
+};
+$('#openAdd').onclick = () => openSub();
+$('#bottomAdd').onclick = () => openSub();
+
+/* ---------- 모달 공통 ---------- */
+const show = s => $(s).classList.add('show');
+const hide = s => $(s).classList.remove('show');
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o || e.target.hasAttribute('data-close')) o.classList.remove('show') }));
+
+/* ---------- 가성비 탭 ---------- */
+let usageApps = null;      // [{pkg,label,minutes,lastUsed}]
+let usageState = 'idle';   // idle | web | denied | ok | error
+
+async function refreshUsage() {
+  if (!isNative()) { usageState = 'web'; return }
+  const U = await getUsagePlugin();
+  if (!U) { usageState = 'error'; return }
+  try {
+    const { granted } = await U.checkPermission();
+    if (!granted) { usageState = 'denied'; return }
+    const r = await U.getUsage({ days: 30 });
+    usageApps = r.apps || []; usageState = 'ok';
+  } catch (e) { usageState = 'error' }
+}
+
+function linkedApp(s) {
+  if (s.pkg === 'none') return null;
+  const apps = usageApps || [];
+  const byPkg = pkg => apps.find(a => a.pkg === pkg) || { pkg, label: null, minutes: 0 };
+  if (s.pkg) return byPkg(s.pkg);
+  const preset = PRESETS.find(([re]) => re.test(s.name));
+  if (preset) return byPkg(preset[1]);
+  const n = s.name.toLowerCase().replace(/\s/g, '');
+  const hit = apps.find(a => { const l = (a.label || '').toLowerCase().replace(/\s/g, ''); return l.length > 1 && (l.includes(n) || n.includes(l)) });
+  return hit || null;
+}
+
+function grade(s, app) {
+  if (!app) return { cls: 'g-none', text: '앱 연결 필요', cph: null };
+  if (!app.minutes) return { cls: 'g-bad', text: '30일간 안 씀 · 해지 추천', cph: Infinity };
+  const cph = s.price / (app.minutes / 60);
+  if (cph < 1000) return { cls: 'g-good', text: '아주 잘 쓰는 중', cph };
+  if (cph < 3000) return { cls: 'g-ok', text: '괜찮아요', cph };
+  if (cph < 7000) return { cls: 'g-meh', text: '조금 아까워요', cph };
+  return { cls: 'g-bad', text: '돈값 못 함 · 해지 고려', cph };
+}
+
+function renderValue() {
+  const body = $('#valueBody');
+  if (usageState === 'web') {
+    body.innerHTML = `<div class="card"><h3>📱 안드로이드 앱 전용 기능</h3>
+      <p>가성비 점수는 휴대폰의 앱 사용 시간을 읽어서 계산해요. 웹 브라우저에서는 사용할 수 없고, 안드로이드 앱으로 설치하면 쓸 수 있어요.</p>
+      <p>예시) 넷플릭스 17,000원 · 한 달 2시간 시청 → <b style="color:var(--danger)">시간당 8,500원</b></p></div>`;
+    return;
+  }
+  if (usageState === 'denied') {
+    body.innerHTML = `<div class="card"><h3>구독이 돈값을 하는지 확인해 볼까요?</h3>
+      <p>SUBTRACK은 <b>앱별 사용 시간</b>을 읽어 구독료를 시간당 금액으로 바꿔 보여줘요.</p>
+      <ul><li>사용 시간 정보는 <b>이 휴대폰 안에서만</b> 계산에 쓰여요.</li>
+      <li>어떤 정보도 서버나 외부로 보내지 않아요.</li>
+      <li>원하지 않으면 허용하지 않아도 다른 기능은 그대로 쓸 수 있어요.</li></ul>
+      <p>다음 화면의 목록에서 <b>SUBTRACK</b>을 찾아 "사용 정보 접근 허용"을 켜 주세요.</p>
+      <button class="add" id="grantBtn">사용 정보 접근 허용하러 가기</button></div>`;
+    $('#grantBtn').onclick = async () => { const U = await getUsagePlugin(); U && U.openSettings() };
+    return;
+  }
+  if (usageState === 'error') { body.innerHTML = '<div class="card"><h3>사용 시간을 불러오지 못했어요</h3><p>앱을 다시 실행해 주세요.</p></div>'; return }
+  if (usageState !== 'ok') { body.innerHTML = '<div class="empty">불러오는 중…</div>'; return }
+  if (!subs.length) { body.innerHTML = '<div class="empty">구독 탭에서 구독을 먼저 등록해 주세요.</div>'; return }
+
+  const rows = subs.map(s => { const app = linkedApp(s); return { s, app, g: grade(s, app) } })
+    .sort((a, b) => (b.g.cph ?? -1) - (a.g.cph ?? -1));
+  const waste = rows.filter(r => r.g.cls === 'g-bad').reduce((a, r) => a + r.s.price, 0);
+  const scored = rows.filter(r => r.g.cph !== null);
+
+  body.innerHTML = `<div class="hero save"><small>지난 30일 기준 · 아까운 구독</small>
+      <div class="total">${fmt(waste)}<span style="font-size:16px;font-weight:600"> /월</span></div>
+      <div class="year">${waste ? '정리하면 1년에 ' + fmt(waste * 12) + ' 아낄 수 있어요' : '돈값 못 하는 구독이 없어요 👍'}</div></div>
+    <div class="stats"><div class="stat"><label>점수 낸 구독</label><strong>${scored.length}/${subs.length}개</strong></div>
+      <div class="stat"><label>해지 고려</label><strong>${rows.filter(r => r.g.cls === 'g-bad').length}개</strong></div></div>
+    <div class="sectionhead"><h2>구독별 시간당 금액</h2></div><div class="list" id="valueList"></div>
+    <div class="note">휴대폰 앱 사용 시간만 계산돼요. PC·TV로 보는 시간은 빠져 있어요.<br>항목을 누르면 연결된 앱을 바꿀 수 있어요.</div>`;
+
+  const list = $('#valueList');
+  rows.forEach(({ s, app, g }) => {
+    const b = document.createElement('button'); b.className = 'item';
+    const usage = !app ? '연결된 앱 없음 · 눌러서 연결' : app.minutes ? (app.label || s.name) + ' · ' + hm(app.minutes) : '휴대폰에서 사용 기록 없음';
+    const right = g.cph === null ? '-' : g.cph === Infinity ? '0분' : fmt(g.cph);
+    const unit = g.cph === null ? '' : g.cph === Infinity ? '30일 사용' : '시간당';
+    b.innerHTML = `<div class="logo" style="background:${colorOf(s.name)}">${esc(s.name.slice(0, 2).toUpperCase())}</div>
+      <div class="details"><b>${esc(s.name)}</b><small>${esc(usage)}</small><span class="badge ${g.cls}">${g.text}</span></div>
+      <div class="price">${right}<small>${unit}</small></div>`;
+    b.onclick = () => openLink(s.id);
+    list.append(b);
+  });
+}
+
+function openLink(id) {
+  const s = subs.find(x => x.id === id); if (!s) return;
+  const current = linkedApp(s);
+  $('#linkTitle').textContent = s.name + ' 앱 연결';
+  const list = $('#appList'); list.innerHTML = '';
+  const apps = [...(usageApps || [])].sort((a, b) => b.minutes - a.minutes);
+  const pick = pkg => { s.pkg = pkg; persist(); hide('#linkOverlay'); renderValue() };
+  const add = (label, sub, pkg, sel) => {
+    const b = document.createElement('button'); if (sel) b.className = 'sel';
+    b.innerHTML = `<span>${esc(label)}</span><small>${esc(sub)}</small>`; b.onclick = () => pick(pkg); list.append(b);
+  };
+  add('자동으로 찾기', '이름으로 연결', undefined, !s.pkg);
+  add('연결 안 함', '점수에서 제외', 'none', s.pkg === 'none');
+  apps.forEach(a => add(a.label || a.pkg, hm(a.minutes), a.pkg, current && current.pkg === a.pkg && !!s.pkg));
+  show('#linkOverlay');
+}
+
+/* ---------- 갈아타기 탭 ---------- */
+const monthKey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+function renderRotate() {
+  const body = $('#rotateBody');
+  const vids = subs.filter(s => VIDEO_CATS.includes(s.cat));
+  if (vids.length < 2) {
+    body.innerHTML = `<div class="card"><h3>🔁 OTT 갈아타기 플래너</h3>
+      <p>OTT를 여러 개 동시에 구독하지 말고, 볼 작품이 있는 달에만 하나씩 돌려 쓰면 같은 콘텐츠를 훨씬 싸게 볼 수 있어요.</p>
+      <p>카테고리가 <b>OTT</b> 또는 <b>영상</b>인 구독을 2개 이상 등록하면 계획을 짜 드려요.</p></div>`;
+    return;
+  }
+  vids.forEach(s => { if (!(s.id in plan.include)) plan.include[s.id] = true });
+  const inc = vids.filter(s => plan.include[s.id]);
+  const now = new Date();
+  const months = Array.from({ length: 6 }, (_, i) => new Date(now.getFullYear(), now.getMonth() + i, 1));
+  // 비어 있는 달은 순서대로 채움
+  months.forEach((m, i) => {
+    const k = monthKey(m);
+    if (!inc.find(s => s.id === plan.months[k]) && inc.length) plan.months[k] = inc[i % inc.length].id;
+  });
+  savePlan();
+
+  const allCost = inc.reduce((a, s) => a + s.price, 0) * 6;
+  const planCost = months.reduce((a, m) => a + ((inc.find(s => s.id === plan.months[monthKey(m)]) || {}).price || 0), 0);
+  const saved = Math.max(0, allCost - planCost);
+
+  const thisPick = inc.find(s => s.id === plan.months[monthKey(months[0])]);
+  const nextPick = inc.find(s => s.id === plan.months[monthKey(months[1])]);
+  const todo = [];
+  inc.filter(s => s !== thisPick).forEach(s => todo.push(`<div class="x">✕ <b>${esc(s.name)}</b> 해지 — 다음 결제일(매월 ${s.day}일) 전에</div>`));
+  if (thisPick) todo.push(`<div class="o">✓ 이번 달은 <b>${esc(thisPick.name)}</b>만 유지</div>`);
+  if (nextPick && nextPick !== thisPick) todo.push(`<div>→ 다음 달 <b>${esc(nextPick.name)}</b> 재구독, ${esc(thisPick ? thisPick.name : '')} 해지</div>`);
+
+  body.innerHTML = `<div class="hero save"><small>6개월 동안 하나씩 돌려 쓰면</small>
+      <div class="total">${fmt(saved)}</div>
+      <div class="year">절약 · 다 유지하면 ${fmt(allCost)} → 계획대로면 ${fmt(planCost)}</div></div>
+    <div class="sectionhead"><h2>이번 달 할 일</h2></div>
+    <div class="todo">${inc.length ? todo.join('') : '아래에서 돌려 쓸 OTT를 골라 주세요.'}</div>
+    <div class="sectionhead"><h2>월별 계획</h2></div><div class="list" id="monthList"></div>
+    <div class="sectionhead"><h2>돌려 쓸 OTT</h2></div><div class="list" id="incList"></div>
+    <div class="note">해지해도 대부분 결제일까지는 계속 볼 수 있어요. 서비스별 해지 규정을 확인하세요.</div>`;
+
+  const ml = $('#monthList');
+  months.forEach((m, i) => {
+    const k = monthKey(m), row = document.createElement('div'); row.className = 'month' + (i === 0 ? ' now' : '');
+    const sel = document.createElement('select');
+    inc.forEach(s => sel.append(new Option(s.name, s.id)));
+    sel.value = plan.months[k] || '';
+    sel.onchange = () => { plan.months[k] = sel.value; savePlan(); renderRotate() };
+    const price = (inc.find(s => s.id === sel.value) || {}).price || 0;
+    row.innerHTML = `<span>${i === 0 ? '이번 달' : (m.getMonth() + 1) + '월'}</span>`;
+    row.append(sel);
+    const b = document.createElement('b'); b.textContent = fmt(price); row.append(b);
+    ml.append(row);
+  });
+
+  const il = $('#incList');
+  vids.forEach(s => {
+    const row = document.createElement('label'); row.className = 'toggle';
+    row.innerHTML = `<input type="checkbox" ${plan.include[s.id] ? 'checked' : ''}><div><b>${esc(s.name)}</b><br><small>월 ${fmt(s.price)} · 매월 ${s.day}일</small></div>`;
+    row.querySelector('input').onchange = e => { plan.include[s.id] = e.target.checked; savePlan(); renderRotate() };
+    il.append(row);
+  });
+}
+
+/* ---------- 백업 ---------- */
+$('#exportBtn').onclick = async () => {
+  const json = JSON.stringify({ subs, plan }, null, 2);
+  const file = new File([json], 'subtrack-backup.json', { type: 'application/json' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'SUBTRACK 백업' }); return } }
+  catch (e) { if (e.name === 'AbortError') return }
+  if (!isNative()) { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); return }
+  try { await navigator.clipboard.writeText(json); alert('백업 데이터를 클립보드에 복사했어요. 메모장이나 카톡 "나에게 보내기"에 붙여넣어 보관하세요.') }
+  catch (e) { prompt('아래 내용을 길게 눌러 복사해 보관하세요.', json) }
+};
+
+/* ---------- 시작 ---------- */
+async function renderAll() {
+  if (tab === 'subs') renderSubs();
+  if (tab === 'value') { renderValue(); await refreshUsage(); renderValue() }
+  if (tab === 'rotate') renderRotate();
+}
+// 설정 화면에서 권한 켜고 돌아오면 다시 확인
+document.addEventListener('visibilitychange', () => { if (!document.hidden && tab === 'value') renderAll() });
+renderAll();
+if (!isNative() && 'serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+</script>
+</body>
+</html>
