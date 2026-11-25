@@ -23,8 +23,16 @@ jobs:
           npm install
           npx cap add android
           node scripts/patch-android.js
-          npm run android:icons
           npx cap sync android
+          # assets/icon-only.png 를 안드로이드 모든 mipmap 폴더에 강제 복사
+          for dir in android/app/src/main/res/mipmap-*; do
+            if [ -d "$dir" ]; then
+              rm -f "$dir"/*.webp
+              cp assets/icon-only.png "$dir/ic_launcher.png"
+              cp assets/icon-only.png "$dir/ic_launcher_round.png"
+              cp assets/icon-only.png "$dir/ic_launcher_foreground.png"
+            fi
+          done
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
