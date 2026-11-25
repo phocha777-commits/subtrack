@@ -24,13 +24,12 @@ jobs:
           npx cap add android
           node scripts/patch-android.js
           npx cap sync android
-          # icon-only.png 를 안드로이드 모든 mipmap 폴더에 강제 복사
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26
           for dir in android/app/src/main/res/mipmap-*; do
             if [ -d "$dir" ]; then
-              rm -f "$dir"/*.webp
+              rm -f "$dir"/*
               cp icon-only.png "$dir/ic_launcher.png"
               cp icon-only.png "$dir/ic_launcher_round.png"
-              cp icon-only.png "$dir/ic_launcher_foreground.png"
             fi
           done
           cd android
