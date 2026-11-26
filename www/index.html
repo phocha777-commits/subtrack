@@ -517,7 +517,9 @@ async function openExternalUrl(url) {
     try {
       await Browser.open({ url });
       return;
-    } catch (e) {}
+    } catch (e) {
+      alert('외부 브라우저 열기 실패: ' + (e.message || e));
+    }
   }
   const opened = window.open(url, '_blank', 'noopener,noreferrer');
   if (!opened) window.location.href = url;
@@ -540,13 +542,16 @@ async function scheduleD1Alarms() {
     const notifications = [];
     subs.forEach((s, idx) => {
       const { date } = daysUntil(s.day);
-      const d1 = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1, 9, 0, 0);
-      if (d1 <= now) return;
+      let d1 = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1, 9, 0, 0);
+      if (d1 <= now) {
+        const nextMonthPay = payDate(date.getFullYear(), date.getMonth() + 1, s.day);
+        d1 = new Date(nextMonthPay.getFullYear(), nextMonthPay.getMonth(), nextMonthPay.getDate() - 1, 9, 0, 0);
+      }
       notifications.push({
         id: idx + 1,
         title: `내일 ${s.name} 결제 예정`,
         body: `${fmt(monthlyPrice(s))} 결제 전, 계속 쓸지 확인해 보세요.`,
-        schedule: { at: d1 }
+        schedule: { at: d1, allowWhileIdle: true }
       });
     });
 
@@ -573,7 +578,7 @@ $('#testAlarmBtn').onclick = async () => {
         id: 99999,
         title: '구독정리 알림 테스트',
         body: '결제 하루 전 오전 9시에 이렇게 알림이 울립니다.',
-        schedule: { at: new Date(Date.now() + 5000) }
+        schedule: { at: new Date(Date.now() + 5000), allowWhileIdle: true }
       }]
     });
     alert('5초 뒤에 테스트 알람이 울립니다. 앱을 백그라운드로 내려도 울립니다.');
