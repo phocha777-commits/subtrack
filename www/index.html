@@ -499,6 +499,16 @@ const withTimeout = (p, ms = 5000) => Promise.race([
   new Promise((_, rej) => setTimeout(() => rej(new Error('응답 시간 초과')), ms))
 ]);
 
+function openExternalUrl(url) {
+  if (!url) return;
+  if (isNative()) {
+    const intentUrl = 'intent://' + url.replace(/^https?:\/\//, '') + '#Intent;scheme=https;action=android.intent.action.VIEW;end';
+    window.location.href = intentUrl;
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 function daysUntil(day) {
   const t = new Date(), today = new Date(t.getFullYear(), t.getMonth(), t.getDate());
   let d = payDate(t.getFullYear(), t.getMonth(), day);
@@ -808,8 +818,9 @@ function renderCancelGuide(name) {
     wrap.innerHTML = `<div class="cancel-box">
       <b>✂️ ${esc(guide.name)} 해지 직통 경로</b>
       <small>${esc(guide.cancelSteps)}</small>
-      <a class="cancel-link" href="${esc(guide.cancelUrl)}" target="_blank" rel="noopener noreferrer">${esc(guide.name)} 해지 페이지 바로가기 →</a>
+      <button type="button" class="cancel-link" id="openCancelUrlBtn">${esc(guide.name)} 해지 페이지 바로가기 →</button>
     </div>`;
+    $('#openCancelUrlBtn').onclick = () => openExternalUrl(guide.cancelUrl);
   }
 }
 
@@ -1060,7 +1071,7 @@ function renderRotate() {
   inc.filter(s => s !== thisPick).forEach(s => {
     const g = findGuide(s.name);
     const linkHtml = (isPro && g && g.cancelUrl)
-      ? ` · <a href="${esc(g.cancelUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--danger);text-decoration:underline">해지 링크</a>`
+      ? ` · <button type="button" data-cancel-url="${esc(g.cancelUrl)}" style="color:var(--danger);text-decoration:underline;font-weight:700">해지 링크</button>`
       : '';
     todo.push(`<div class="x">✕ <b>${esc(s.name)}</b> 해지 — 매월 ${s.day}일 결제 전${linkHtml}</div>`);
   });
@@ -1096,6 +1107,10 @@ function renderRotate() {
     row.innerHTML = `<input type="checkbox" ${plan.include[s.id] ? 'checked' : ''}><div><b>${esc(s.name)}</b><br><small>월 ${fmt(monthlyPrice(s))} · 매월 ${s.day}일</small></div>`;
     row.querySelector('input').onchange = e => { plan.include[s.id] = e.target.checked; savePlan(); renderRotate() };
     il.append(row);
+  });
+
+  body.querySelectorAll('[data-cancel-url]').forEach(btn => {
+    btn.onclick = () => openExternalUrl(btn.dataset.cancelUrl);
   });
 }
 
